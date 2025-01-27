@@ -242,10 +242,10 @@ source "drivers/nothing_stability/Kconfig"
 
 source "drivers/nothing_thermal/Kconfig"
 
-menu "KernelSU"
+menu "KernelSU Next"
 
 config KSU
-        bool "Ship KernelSU with kernel"
+        bool "Ship KernelSU Next with kernel"
 
 endmenu
 
