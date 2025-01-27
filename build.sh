@@ -42,7 +42,10 @@ ZIPNAME=Ryuusei
 VERSION=$(cat $KERNEL_DIR/Version)
 
 # Specify compiler
-COMPILER=neutron
+COMPILER=aosp
+
+# Clang revision for aosp clang (empty will use default)
+AOSP_CLANG_REVISION=
 
 # Sigint detection
 SIGINT_DETECT=0
@@ -95,6 +98,24 @@ function cloneTC() {
                 PATH="$HOME/ryuusei/neutron-clang/bin:$PATH"
             fi
             ;;
+        aosp)
+            if [ -z "$AOSP_CLANG_REVISION" ]; then
+                AOSP_CLANG_REVISION=r536225
+            fi
+            if [ $COMPILER_CLEANUP = true ]; then
+                rm -rf ~/meteoric/aosp-clang
+            fi
+            if [ $(ls $HOME/meteoric/aosp-clang 2>/dev/null | wc -l) -ne 0 ]; then
+                PATH="$HOME/meteoric/aosp-clang/bin:$PATH"
+            else
+                mkdir -p $HOME/meoteric/aosp-clang
+                echo "Downloading AOSP clang-${AOSP_CLANG_REVISION}..."
+                curl -LO "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-${AOSP_CLANG_REVISION}.tar.gz" || exit
+                echo "Extracting AOSP clang-${AOSP_CLANG_REVISION}..."
+                tar -xf clang-${AOSP_CLANG_REVISION}.tar.gz -C $HOME/meoteric/aosp-clang
+                PATH="$HOME/meteoric/aosp-clang/bin:$PATH"
+            fi
+        ;;
     esac
 }
 	
