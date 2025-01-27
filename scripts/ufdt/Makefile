@@ -20,4 +20,4 @@ ufdt_apply_overlay-objs := libufdt/tests/src/ufdt_overlay_test_app.o $(common-ob
 HOST_EXTRACFLAGS := -I$(srctree)/scripts/dtc-aosp/dtc/libfdt \
 		    -I$(srctree)/$(src)/libufdt/sysdeps/include \
                     -I$(srctree)/$(src)/libufdt/include
-HOST_EXTRACFLAGS += -std=gnu99 -Wno-missing-prototypes -Wno-strict-prototypes -Wno-format
+HOST_EXTRACFLAGS += -std=gnu99 -Wno-missing-prototypes -Wno-strict-prototypes -Wno-format -fPIC
