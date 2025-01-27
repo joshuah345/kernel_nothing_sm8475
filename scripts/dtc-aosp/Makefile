@@ -37,7 +37,7 @@ fdtoverlaymerge-objs += $(libfdt-objs)
 
 # We're working with a submodule, so make these all relative to that.
 HOST_EXTRACFLAGS := -I$(srctree)/$(src)/dtc -I$(srctree)/$(src)/dtc/libfdt
-HOST_EXTRACFLAGS += -DNO_YAML
+HOST_EXTRACFLAGS += -DNO_YAML -fPIC
 
 # Dependencies on generated files need to be listed explicitly.
 $(obj)/dtc/dtc-lexer.lex.o: $(obj)/dtc/dtc-parser.h
