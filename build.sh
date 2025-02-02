@@ -154,13 +154,15 @@ function choices() {
     # KernelSU-Next
     read -p "Include KernelSU-Next? If unsure, say N. (Y/N) " KSU_RESP 
     case $KSU_RESP in
-        [yY] )
+        [yY])
             if [ $(ls $KERNEL_DIR/KernelSU-Next 2>/dev/null | wc -l) -eq 0 ]; then
                 rm -rf $KERNEL_DIR/KernelSU-Next
                 git submodule update --init --recursive KernelSU-Next
+                
             else
             	ZIPNAME=Meteoric-KernelSU-Next
             	KSU_CONFIG=ksu.config
+                sed -E -i 's/^kernel.string.*/kernel.string=Meteoric Kernel by HELLBOY017 (+ KernelSU Next)/' anykernel/anykernel.sh
             	if [ $(grep -c "KSU" arch/arm64/configs/$DEFCONFIG) -eq 0 ]; then
                     sed -i "s/-Meteoric/-Meteoric-$VERSION-KSU_NEXT/" arch/arm64/configs/$DEFCONFIG
             	fi
@@ -169,6 +171,7 @@ function choices() {
          *)
             if [ $(grep -c $VERSION arch/arm64/configs/$DEFCONFIG) -eq 0 ]; then
                 sed -i "s/-Meteoric/-Meteoric-$VERSION/" arch/arm64/configs/$DEFCONFIG
+                sed -E -i 's/^kernel.string.*/kernel.string=Meteoric Kernel by HELLBOY017/' anykernel/anykernel.sh
             fi
             ;;
     esac
