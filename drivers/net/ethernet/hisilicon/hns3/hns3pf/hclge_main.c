@@ -9196,6 +9196,9 @@ int hclge_set_vlan_filter(struct hnae3_handle *handle, __be16 proto,
 	bool writen_to_tbl = false;
 	int ret = 0;
 
+	if (vlan_id >= VLAN_N_VID)
+		return -EINVAL;
+
 	/* When device is resetting or reset failed, firmware is unable to
 	 * handle mailbox. Just record the vlan id, and remove it after
 	 * reset finished.
@@ -10682,7 +10685,7 @@ static u32 hclge_get_max_channels(struct hnae3_handle *handle)
 	struct hclge_dev *hdev = vport->back;
 
 	return min_t(u32, hdev->rss_size_max,
-		     vport->alloc_tqps / kinfo->num_tc);
+		     vport->alloc_tqps / kinfo->tc_info.num_tc);
 }
 
 static void hclge_get_channels(struct hnae3_handle *handle,
@@ -10769,7 +10772,7 @@ out:
 		dev_info(&hdev->pdev->dev,
 			 "Channels changed, rss_size from %u to %u, tqps from %u to %u",
 			 cur_rss_size, kinfo->rss_size,
-			 cur_tqps, kinfo->rss_size * kinfo->num_tc);
+			 cur_tqps, kinfo->rss_size * kinfo->tc_info.num_tc);
 
 	return ret;
 }
