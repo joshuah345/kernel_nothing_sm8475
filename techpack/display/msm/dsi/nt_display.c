@@ -29,10 +29,7 @@ extern struct sde_connector *panel_feature_sde_conn;
 int nt_display_alloc_sfm_cmd_packets(struct dsi_display_refresh_rate_cmd_set *cmd,
 					u32 packet_count)
 {
-	u32 size;
-
-	size = packet_count * sizeof(*cmd->cmds);
-	cmd->cmds = kzalloc(size, GFP_KERNEL);
+	cmd->cmds = kzalloc(packet_count, GFP_KERNEL);
 	if (!cmd->cmds)
 		return -ENOMEM;
 
@@ -44,19 +41,29 @@ int nt_display_parse_switch_cmds(struct dsi_panel *panel)
 {
 	struct dsi_parser_utils *nt_utils = &panel->utils;
 	int i, rc = 0;
+	u32 packet_count;
 
 	for (i = DSI_CMD_SET_FRAME; i < DSI_CMD_SFM_MAX; i++) {
 		const char *string = NULL;
 
-		if (i < DSI_CMD_30HZ_DIMMING) {
-			nt_display_alloc_sfm_cmd_packets(&panel->nt_cmd_sets[i], COMMAND_LENGTH_1_BYTE_SEND);
-		} else {
-			nt_display_alloc_sfm_cmd_packets(&panel->nt_cmd_sets[i], COMMAND_LENGTH_2_BYTE_SEND);
+		rc = nt_utils->read_string(nt_utils->data, cmd_set_sfm_map[i], &string);
+                if (rc) {
+                        SDE_ERROR("sfm failed to parse set %d\n", i);
+                        continue;
 		}
 
-		rc = nt_utils->read_string(nt_utils->data, cmd_set_sfm_map[i], &string);
-		if (rc)
-			SDE_ERROR("sfm failed to parse set %d\n", i);
+		if (i < DSI_CMD_30HZ_DIMMING) {
+			packet_count = COMMAND_LENGTH_1_BYTE_SEND;
+		} else {
+			packet_count = COMMAND_LENGTH_2_BYTE_SEND;
+		}
+
+		rc = nt_display_alloc_sfm_cmd_packets(&panel->nt_cmd_sets[i], packet_count);
+		if (rc) {
+			SDE_ERROR("failed to allocate panel->nt_cmd_sets[%d]\n", i);
+			continue;
+		}
+
 		strcpy(panel->nt_cmd_sets[i].cmds, string);
 	}
 
@@ -206,4 +213,3 @@ int get_refresh_rate(struct sde_connector *sde_conn)
 	}
 	return index;
 }
-
