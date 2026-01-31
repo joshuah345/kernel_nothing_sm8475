@@ -4,7 +4,7 @@
 ### AnyKernel setup
 # global properties
 properties() { '
-kernel.string=Meteoric Kernel by HELLBOY017
+kernel.string=Ryuusei Kernel by hiroshi. & HELLBOY017
 do.devicecheck=1
 do.modules=0
 do.systemless=1

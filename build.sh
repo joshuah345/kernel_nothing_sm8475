@@ -9,7 +9,7 @@
 KERNEL_DIR=$(pwd)
 
 # Kernel defconfig
-DEFCONFIG=vendor/meteoric_defconfig
+DEFCONFIG=vendor/ryuusei_defconfig
 
 # AnyKernel3 directory
 ANYKERNEL3_DIR=$KERNEL_DIR/anykernel
@@ -36,7 +36,7 @@ VERBOSE=0
 KERVER=$(make kernelversion)
 
 # Specify Final Zip Name
-ZIPNAME=Meteoric
+ZIPNAME=Ryuusei
 
 # Zip version
 VERSION=$(cat $KERNEL_DIR/Version)
@@ -68,33 +68,51 @@ function cloneTC() {
     case $COMPILER in
         proton)
             if [ $COMPILER_CLEANUP = true ]; then
-                rm -rf ~/meteoric/neutron-clang
+                rm -rf ~/ryuusei/neutron-clang
             fi
-            if [ $(ls $HOME/meteoric/proton-clang 2>/dev/null | wc -l) -ne 0 ]; then
-                PATH="$HOME/meteoric/proton-clang/bin:$PATH"
+            if [ $(ls $HOME/ryuusei/proton-clang 2>/dev/null | wc -l) -ne 0 ]; then
+                PATH="$HOME/ryuusei/proton-clang/bin:$PATH"
             else
-                git clone --depth=1  https://github.com/kdrag0n/proton-clang.git ~/meteoric/proton-clang
-                PATH="$HOME/meteoric/proton-clang/bin:$PATH"
+                git clone --depth=1  https://github.com/kdrag0n/proton-clang.git ~/ryuusei/proton-clang
+                PATH="$HOME/ryuusei/proton-clang/bin:$PATH"
             fi
             ;;
         neutron)
             if [ $COMPILER_CLEANUP = true ]; then
-                rm -rf ~/meteoric/proton-clang
+                rm -rf ~/ryuusei/proton-clang
             fi
-            if [ $(ls $HOME/meteoric/neutron-clang/bin 2>/dev/null | wc -l ) -ne 0 ] && 
-               [ $(find $HOME/meteoric/neutron-clang -name *.tar.zst | wc -l) -eq 0 ]; then
-                PATH="$HOME/meteoric/neutron-clang/bin:$PATH"
+            if [ $(ls $HOME/ryuusei/neutron-clang/bin 2>/dev/null | wc -l ) -ne 0 ] && 
+               [ $(find $HOME/ryuusei/neutron-clang -name *.tar.zst | wc -l) -eq 0 ]; then
+                PATH="$HOME/ryuusei/neutron-clang/bin:$PATH"
             else
-                rm -rf ~/meteoric/neutron-clang
-                mkdir -p ~/meteoric/neutron-clang
-                cd ~/meteoric/neutron-clang || exit
+                rm -rf ~/ryuusei/neutron-clang
+                mkdir -p ~/ryuusei/neutron-clang
+                cd ~/ryuusei/neutron-clang || exit
                 curl -LO "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman"
                 chmod a+x antman
                 ./antman -S
                 cd - || exit
-                PATH="$HOME/meteoric/neutron-clang/bin:$PATH"
+                PATH="$HOME/ryuusei/neutron-clang/bin:$PATH"
             fi
             ;;
+        aosp)
+            if [ -z "$AOSP_CLANG_REVISION" ]; then
+                AOSP_CLANG_REVISION=r536225
+            fi
+            if [ $COMPILER_CLEANUP = true ]; then
+                rm -rf ~/ryuusei/aosp-clang
+            fi
+            if [ $(ls $HOME/ryuusei/aosp-clang 2>/dev/null | wc -l) -ne 0 ]; then
+                PATH="$HOME/ryuusei/aosp-clang/bin:$PATH"
+            else
+                mkdir -p $HOME/ryuusei/aosp-clang
+                echo "Downloading AOSP clang-${AOSP_CLANG_REVISION}..."
+                curl -LO "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-${AOSP_CLANG_REVISION}.tar.gz" || exit
+                echo "Extracting AOSP clang-${AOSP_CLANG_REVISION}..."
+                tar -xf clang-${AOSP_CLANG_REVISION}.tar.gz -C $HOME/ryuusei/aosp-clang
+                PATH="$HOME/ryuusei/aosp-clang/bin:$PATH"
+            fi
+        ;;
     esac
 }
 	
@@ -102,15 +120,15 @@ function cloneTC() {
 # Export Variables
 function exports() {
     # Export KBUILD_COMPILER_STRING
-    export KBUILD_COMPILER_STRING=$($HOME/meteoric/$COMPILER-clang/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
+    export KBUILD_COMPILER_STRING=$($HOME/ryuusei/$COMPILER-clang/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
 
     # Export ARCH and SUBARCH
     export ARCH=arm64
     export SUBARCH=arm64
 
     # Export KBUILD HOST and USER
-    export KBUILD_BUILD_HOST=Neoteric
-    export KBUILD_BUILD_USER=HELLBOY017
+    export KBUILD_BUILD_HOST=nukisystems
+    export KBUILD_BUILD_USER=hiroshi
 
     # Export PROCS and DISTRO
     export PROCS=$(nproc --all)
@@ -142,15 +160,15 @@ function choices() {
                 rm -rf $KERNEL_DIR/susfs4ksu
                 git submodule update --init --recursive susfs4ksu
             fi
-            ZIPNAME=Meteoric-KernelSU-Next
+            ZIPNAME=Ryuusei-KernelSU-Next
             KSU_CONFIG=ksu.config
             if [ $(grep -c "KSU" arch/arm64/configs/$DEFCONFIG) -eq 0 ]; then
-                sed -i "s/-Meteoric/-Meteoric-$VERSION-KSU-Next/" arch/arm64/configs/$DEFCONFIG
+                sed -i "s/-Ryuusei/-Ryuusei-$VERSION-KSU-Next/" arch/arm64/configs/$DEFCONFIG
             fi
             ;;
          *)
             if [ $(grep -c $VERSION arch/arm64/configs/$DEFCONFIG) -eq 0 ]; then
-                sed -i "s/-Meteoric/-Meteoric-$VERSION/" arch/arm64/configs/$DEFCONFIG
+                sed -i "s/-Ryuusei/-Ryuusei-$VERSION/" arch/arm64/configs/$DEFCONFIG
             fi
             ;;
     esac
@@ -166,9 +184,9 @@ function choices() {
     # Interrupt detected
     if [ $SIGINT_DETECT -eq 1 ]; then
         if [ $(grep -c "KSU" arch/arm64/configs/$DEFCONFIG) -ne 0 ]; then
-            sed -i "s/-Meteoric-$VERSION-KSU-Next/-Meteoric/" arch/arm64/configs/$DEFCONFIG
+            sed -i "s/-Ryuusei-$VERSION-KSU-Next/-Ryuusei/" arch/arm64/configs/$DEFCONFIG
         elif [ $(grep -c $VERSION arch/arm64/configs/$DEFCONFIG) -ne 0 ]; then
-            sed -i "s/-Meteoric-$VERSION/-Meteoric/" arch/arm64/configs/$DEFCONFIG
+            sed -i "s/-Ryuusei-$VERSION/-Ryuusei/" arch/arm64/configs/$DEFCONFIG
         fi
         exit
     fi
@@ -194,10 +212,10 @@ function compile() {
     V=$VERBOSE 2>&1 | tee out/error.log
 
     # KernelSU-Next
-    if [ $ZIPNAME = Meteoric-KernelSU-Next ]; then
+    if [ $ZIPNAME = Ryuusei-KernelSU-Next ]; then
         sed -i 's/CONFIG_INCLUDE_KSU=y/# CONFIG_INCLUDE_KSU is not set/g' out/.config
         sed -i '/CONFIG_INCLUDE_KSU=y/d' out/defconfig
-        sed -i "s/-Meteoric-$VERSION-KSU-Next/-Meteoric/" out/defconfig out/.config arch/arm64/configs/$DEFCONFIG
+        sed -i "s/-Ryuusei-$VERSION-KSU-Next/-Ryuusei/" out/defconfig out/.config arch/arm64/configs/$DEFCONFIG
         
         if [ $(grep -c "# KernelSU" arch/arm64/configs/$DEFCONFIG) -eq 1 ]; then
             sed -i 's/CONFIG_INCLUDE_KSU=y/# CONFIG_INCLUDE_KSU is not set/g' arch/arm64/configs/$DEFCONFIG
@@ -205,7 +223,7 @@ function compile() {
             sed -i '/CONFIG_INCLUDE_KSU=y/d' arch/arm64/configs/$DEFCONFIG
         fi
     else
-        sed -i "s/-Meteoric-$VERSION/-Meteoric/" out/defconfig out/.config arch/arm64/configs/$DEFCONFIG
+        sed -i "s/-Ryuusei-$VERSION/-Ryuusei/" out/defconfig out/.config arch/arm64/configs/$DEFCONFIG
     fi
 
     # Verify build
@@ -255,7 +273,7 @@ function zipping() {
         read -p "Do you want to do a github release? If unsure, say N. (Y/N) " GIT_RESP 
         case $GIT_RESP in
             [yY] )
-                gh release create $VERSION out/$FINAL_ZIP --repo $RELEASE_REPO --title Meteoric-$VERSION
+                gh release create $VERSION out/$FINAL_ZIP --repo $RELEASE_REPO --title Ryuusei-$VERSION
                 ;;
             *)
                 read -p "Do you want to upload files to the current github release? If unsure, say N. (Y/N) " UPLOAD_RESP 
